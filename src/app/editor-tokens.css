@@ -1,0 +1,36 @@
+/*
+ * Editor tokens (Tailwind CSS v4): the sizes and color roles only an editor needs, measured from
+ * the design canvas (docs/design/README.md). The shared look stays in tokens.css, copied from the
+ * Feed, so that file can move to the UI Kit unchanged.
+ *
+ * Imported by src/app/globals.css right after tokens.css.
+ * ------------------------------------------------------------------------- */
+
+@theme static {
+  /* Layout, as drawn at 1440 × 900. The program monitor takes the space that's left. */
+  --spacing-appbar: 2.75rem;         /* 44 px */
+  --spacing-toolbar: 2.75rem;        /* 44 px: snapping, zoom, undo/redo, export */
+  --spacing-bin: 18.75rem;           /* 300 px: media bin */
+  --spacing-inspector: 17.5rem;      /* 280 px */
+
+  /* Timeline */
+  --spacing-track-header: 5.5rem;    /* 88 px: the V2, V1 and A1 labels */
+  --spacing-ruler: 1.75rem;          /* 28 px */
+  --spacing-track-v2: 4.5rem;        /* 72 px */
+  --spacing-track-v1: 5.5rem;        /* 88 px: the main track gets the tallest filmstrip */
+  --spacing-track-a1: 4.5rem;        /* 72 px */
+  --spacing-trim-handle: 0.375rem;   /* 6 px; 8 px while it's being dragged */
+  --radius-clip: 4px;
+
+  /* Color roles. One accent: the playhead, the selection and the focus ring are all Ember,
+     and a snap line is white, so the two never get confused. */
+  --color-playhead: var(--color-accent);
+  --color-selection: var(--color-accent);
+  --color-snap: var(--color-fg);
+  --color-clip: var(--color-surface-raised);   /* a clip's body, behind its filmstrip */
+  --color-waveform: var(--color-fg-subtle);
+  --color-waveform-selected: var(--color-fg-muted);  /* on a selected clip */
+  --color-tick: var(--color-line);             /* ruler: minor ticks */
+  --color-tick-major: var(--color-line-strong);
+  --color-monitor: #000000;                    /* the program monitor's canvas */
+}

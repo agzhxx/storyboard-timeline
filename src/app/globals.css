@@ -1,0 +1,105 @@
+/* Tailwind looks for class names only where markup lives: the components (.tsx) and index.html.
+   Read anywhere else, plain words look like classes: "grow" in a comment became a .grow rule,
+   "table" in the docs a .table one, and "ring" in this file's own comments a .ring one. */
+@import "tailwindcss" source(none);
+@source "../**/*.tsx";
+@source "../../index.html";
+/* The timeline moves clips and the playhead by writing `style.transform`: not the utility. */
+@source not inline("transform");
+@import "./tokens.css";
+@import "./editor-tokens.css";
+
+/* The Genframe Kit's components (src/components/ui, installed with `shadcn add`) are styled with
+   shadcn's color names. Here those names are the tokens copied from the Feed, so the Kit's cards
+   look like the rest of the editor: the same map as the Feed's and the Kit's docs site. One name
+   stays ours: shadcn's `accent` is a hover fill, ours is Ember, and no Kit component here uses it. */
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-fg);
+  --color-card: var(--color-surface);
+  --color-card-foreground: var(--color-fg);
+  --color-popover: var(--color-surface-raised);
+  --color-popover-foreground: var(--color-fg);
+  --color-primary: var(--color-accent);
+  --color-primary-foreground: var(--color-on-accent);
+  --color-secondary: var(--color-surface-raised);
+  --color-secondary-foreground: var(--color-fg);
+  /* Muted: what a card shows before its media arrives, as the loading cards. */
+  --color-muted: var(--color-skeleton);
+  --color-muted-foreground: var(--color-fg-muted);
+  --color-destructive: var(--color-danger);
+  --color-border: var(--color-line);
+  --color-input: var(--color-line-strong);
+  --color-ring: var(--color-focus);
+  /* shadcn's radii by role: badge 4, card 6, control 8, panel 12 px. */
+  --radius-sm: var(--radius-badge);
+  --radius-md: var(--radius-card);
+  --radius-lg: var(--radius-control);
+  --radius-xl: var(--radius-panel);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* The Kit's motion tokens, as `shadcn add` wrote them. */
+  --genframe-duration-fast: 120ms;
+  --genframe-duration-base: 220ms;
+  --genframe-duration-reveal: 600ms;
+  --genframe-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --genframe-ease-spring: linear(0, 0.007 1.3%, 0.026 2.5%, 0.056 3.8%, 0.101 5.3%, 0.204 8%, 0.458 14%, 0.568 16.8%, 0.668 19.5%, 0.753 22.3%, 0.825 25%, 0.888 28%, 0.937 31%, 0.972 34%, 0.997 37%, 1.013 40%, 1.028 47.3%, 1.003 76.5%, 1);
+}
+
+/* Keyboard focus, as drawn: a 2 px Ember ring with a 2 px gap that shows the page color, so the
+   ring stays visible around clips and bright media. This rule is outside Tailwind's layers, so it
+   beats any utility: an element that draws its own ring hides this one with
+   `focus-visible:outline-none!` (a clip, a trim handle). */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* The toolbar's zoom slider, as drawn: a 2 px track, light up to the knob, and a 12 px knob.
+   --fill is set from the zoom: where the knob's middle is. */
+.zoom-slider {
+  appearance: none;
+  width: 96px;
+  height: 20px;
+  flex: none;
+  background: transparent;
+  cursor: pointer;
+}
+.zoom-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--color-fg-muted) var(--fill),
+    var(--color-line) var(--fill)
+  );
+}
+.zoom-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-fg);
+}
+.zoom-slider::-moz-range-track {
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--color-line);
+}
+.zoom-slider::-moz-range-progress {
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--color-fg-muted);
+}
+.zoom-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-fg);
+}

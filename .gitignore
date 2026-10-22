@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# tests
+/coverage/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# env files: secrets stay local
+.env*
+
+# vercel
+.vercel
+
+# editors and OS
+.DS_Store
+*.log
+
+# the demo clips (scripts/record-clips.ts): MP4s too large for git; the README's WebPs are in docs/media/
+/demo-clips/

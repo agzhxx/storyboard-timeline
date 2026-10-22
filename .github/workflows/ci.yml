@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      # GitHub's Ubuntu runners already have Google Chrome. WebKit, which runs the UI tests too,
+      # comes from Playwright with the system libraries it needs.
+      - run: pnpm exec playwright install --with-deps webkit
+
+      - run: pnpm test:e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Vercel's own Git deploys can't be used here, so CI deploys with a token
+  # from the personal Vercel account.
+  deploy:
+    needs: ci
+    # Pull requests from forks get no secrets, so only deploy branches of this repo.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      url: ${{ github.event_name == 'push' && 'https://storyboard-timeline.vercel.app' || steps.deploy.outputs.url }}
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      # The personal account's team and the storyboard-timeline project, by id (ids, not
+      # secrets): the CLI reads them directly instead of listing the token's teams.
+      VERCEL_ORG_ID: team_lq3gUvlSi2tEgK5WkV3YK6Y2
+      VERCEL_PROJECT_ID: prj_Pm98E3a77A9AwPa5lHB5LviJz0R0
+      VERCEL_ENV: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+      PROD_FLAG: ${{ github.event_name == 'push' && '--prod' || '' }}
+    steps:
+      - name: Check the Vercel token
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Add the VERCEL_TOKEN repository secret (see README, Deploys)."
+            exit 1
+          fi
+
+      # A pull request's own last commit, not the merge commit GitHub makes for it: Vercel
+      # blocks a commit whose author it can't match to a GitHub account, and GitHub's merge
+      # commits carry the account's private noreply address.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: npm install --global vercel@63.1.2
+
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --environment="$VERCEL_ENV" --token="$VERCEL_TOKEN"
+
+      - name: Build
+        run: vercel build $PROD_FLAG --token="$VERCEL_TOKEN"
+
+      - name: Deploy
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt $PROD_FLAG --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $VERCEL_ENV: $url" >> "$GITHUB_STEP_SUMMARY"
